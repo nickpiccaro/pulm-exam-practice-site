@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulmonary Physiology Exam Practice</title>
+<meta name="description" content="Unofficial practice exam for pulmonary physiology: statics, dynamics, ventilation, diffusion, O₂/CO₂ transport, V/Q, acid–base, control of ventilation, exercise and PFTs. Build full or short tests, see live strengths/weaknesses, progress saved in your browser.">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+:root{color-scheme:light;--bg:#f6f7f7;--card:#fff;--ink:#1d1d1f;--mute:#6b6b70;--line:#e2e4e4;--accent:#1d5c7a;--accent2:#2a7aa0;--ok:#1f7a4d;--okbg:#e8f5ee;--bad:#b42318;--badbg:#fdecea;--warn:#b26b00;--warnbg:#fff4e0;--sel:#e7f0f5}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:880px;margin:0 auto;padding:20px 18px 80px}
+h1{font-size:22px;margin:0 0 4px}
+h2{font-size:18px;margin:0 0 10px}
+h3{font-size:15px;margin:18px 0 8px}
+.sub{color:var(--mute);margin:0 0 18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:14px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:8px 14px;color:var(--ink)}
+button:hover{border-color:#b8bcbc}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+button.primary:hover{background:var(--accent2)}
+button.ghost{background:transparent;border-color:transparent;color:var(--mute)}
+button.ghost:hover{color:var(--ink)}
+button.sm{padding:5px 10px;font-size:13px}
+button.danger{color:var(--bad)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chip{border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:#fff;cursor:pointer;user-select:none;font-size:14px}
+.chip.on{background:var(--sel);border-color:var(--accent);color:var(--accent);font-weight:600}
+.chip small{color:var(--mute);font-weight:400}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;border-radius:0;border-right:1px solid var(--line);padding:7px 12px;font-size:14px}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--sel);color:var(--accent);font-weight:700}
+.lab{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);font-weight:600;margin:14px 0 6px}
+input[type=number],input[type=text]{font:inherit;padding:6px 9px;border:1px solid var(--line);border-radius:8px}
+.topbar{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:13px;color:var(--mute);flex-wrap:wrap}
+.bar{flex:1;min-width:80px;height:6px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.live{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.live .lt{display:flex;align-items:center;gap:6px;font-size:12px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 8px;cursor:pointer}
+.live .lt .mb{width:46px;height:5px;background:#eee;border-radius:9px;overflow:hidden}
+.live .lt .mb i{display:block;height:100%}
+.tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:#eef1f1;color:var(--mute);margin-right:6px}
+.stem{white-space:pre-wrap;font-size:16px;margin:6px 0 14px}
+.opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:11px 14px;margin:7px 0;border:1.5px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
+.opt .k{flex:0 0 24px;height:24px;border-radius:50%;border:1.5px solid #c5c9c9;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--mute)}
+.opt .t{flex:1}
+.opt.sel{border-color:var(--accent);background:var(--sel)}
+.opt.sel .k{border-color:var(--accent);color:var(--accent)}
+.opt.correct{border-color:var(--ok);background:var(--okbg)}
+.opt.correct .k{border-color:var(--ok);background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--bad);background:var(--badbg)}
+.opt.wrong .k{border-color:var(--bad);background:var(--bad);color:#fff}
+.opt.locked{cursor:default}
+.why{display:block;font-size:13.5px;color:#444;margin-top:6px;padding-top:6px;border-top:1px dashed #d4d8d8}
+.conf{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--mute);margin-top:10px}
+.conf button{padding:5px 11px;font-size:13px}
+.conf button.on{background:var(--sel);border-color:var(--accent);color:var(--accent);font-weight:600}
+.verdict{font-weight:700;font-size:16px;margin:4px 0 8px}
+.verdict.ok{color:var(--ok)}.verdict.bad{color:var(--bad)}
+.expl{white-space:pre-wrap}
+.obj{font-size:13.5px;color:var(--mute);margin-top:10px}
+.chat{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+.msgs{display:flex;flex-direction:column;gap:10px;margin-bottom:10px;max-height:460px;overflow:auto}
+.msg{padding:10px 13px;border-radius:10px;max-width:92%}
+.msg.u{align-self:flex-end;background:var(--sel)}
+.msg.a{align-self:flex-start;background:#f3f4f4}
+.msg.a p{margin:0 0 6px}.msg.a p:last-child{margin:0}
+.msg.a ul{margin:4px 0 6px 18px;padding:0}
+.chatin{display:flex;gap:8px}
+.chatin textarea{flex:1;font:inherit;padding:9px 11px;border:1px solid var(--line);border-radius:8px;resize:vertical;min-height:42px}
+.quick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.quick button{font-size:12.5px;padding:4px 10px;border-radius:99px;color:var(--mute)}
+.typing{color:var(--mute);font-style:italic;font-size:13px}
+.footer{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:16px 0 6px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.kbd{font-size:12px;color:var(--mute)}
+.stat{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat div{background:#fafbfb;border:1px solid var(--line);border-radius:10px;padding:12px}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:12.5px;color:var(--mute)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--mute)}
+.qtable{width:auto;min-width:300px;margin:0 0 14px;font-size:14.5px}
+.qtable th{text-transform:none;letter-spacing:0;font-size:13px;color:#444;background:#f6f8f8}
+.qtable td,.qtable th{border:1px solid var(--line);padding:6px 12px}
+.pill{font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap}
+.pill.s{background:var(--okbg);color:var(--ok)}.pill.m{background:var(--warnbg);color:var(--warn)}.pill.w{background:var(--badbg);color:var(--bad)}.pill.n{background:#eef1f1;color:var(--mute)}
+.chartbox{position:relative;height:320px}
+details{border:1px solid var(--line);border-radius:10px;padding:10px 14px;margin:8px 0;background:#fff}
+details summary{cursor:pointer;font-weight:600}
+.fig{display:flex;justify-content:center;margin:4px 0 14px;border:1px solid var(--line);border-radius:10px;padding:8px;background:#fff;overflow-x:auto}
+.note{font-size:13px;color:var(--mute)}
+.hidden{display:none!important}
+.nav{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.nav button{width:34px;height:30px;padding:0;font-size:12px;border-radius:6px}
+.nav button.c{background:var(--okbg);border-color:#bfe3cf;color:var(--ok)}
+.nav button.x{background:var(--badbg);border-color:#f3c4bf;color:var(--bad)}
+.nav button.cur{outline:2px solid var(--accent);outline-offset:1px}
+.nav button.f{font-weight:800}
+.prog{height:5px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:6px}
+.prog i{display:block;height:100%;background:var(--accent)}
+.sess{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.sess:last-child{border-bottom:0}
+.minibars{display:grid;grid-template-columns:170px 1fr 70px;gap:6px 10px;align-items:center;font-size:13px}
+.minibars .mb{height:8px;background:#eee;border-radius:9px;overflow:hidden}
+.minibars .mb i{display:block;height:100%}
+@media (max-width:600px){.stat{grid-template-columns:repeat(2,1fr)}.minibars{grid-template-columns:110px 1fr 54px}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script src="fig.js"></script>
+<script src="q-mech.js"></script>
+<script src="q-gas.js"></script>
+<script src="q-trans.js"></script>
+<script src="q-vq.js"></script>
+<script src="q-abc.js"></script>
+<script src="q-pft.js"></script>
+<script>
+const QUESTIONS = window.QBANK;
+const STORE = 'pulm-exam-practice-v1';
+const TOPIC_ORDER = ["Lung Volumes, Statics & Surfactant","Respiratory Dynamics & Airway Resistance","Ventilation & Alveolar Gas","Diffusion","O₂ & CO₂ Transport","V/Q, Hypoxemia & Pulmonary Circulation","Acid–Base","Control of Ventilation & Exercise","PFT Interpretation & Respiratory Consult"];
+const SHORT = {"Lung Volumes, Statics & Surfactant":"Statics & volumes","Respiratory Dynamics & Airway Resistance":"Dynamics & resistance","Ventilation & Alveolar Gas":"Ventilation & alveolar gas","Diffusion":"Diffusion","O₂ & CO₂ Transport":"O₂/CO₂ transport","V/Q, Hypoxemia & Pulmonary Circulation":"V/Q & hypoxemia","Acid–Base":"Acid–base","Control of Ventilation & Exercise":"Control & exercise","PFT Interpretation & Respiratory Consult":"PFTs & consult"};
+const byId = Object.fromEntries(QUESTIONS.map(q=>[q.id,q]));
+const app = document.getElementById('app');
+let DB = load();
+let charts = [];
+let view = 'home';
+
+/* ---------- storage ---------- */
+function blank(){return {v:1,sessions:{},list:[],active:null,flags:{},chats:{},prefs:{live:true}}}
+function load(){
+  let d;try{d=JSON.parse(localStorage.getItem(STORE))}catch(e){}
+  if(!d||!d.sessions)d=blank();
+  d.flags=d.flags||{};d.chats=d.chats||{};d.prefs=d.prefs||{live:true};d.list=(d.list||[]).filter(id=>d.sessions[id]);
+  Object.values(d.sessions).forEach(s=>{s.order=s.order.filter(id=>byId[id]);Object.keys(s.answers).forEach(k=>{if(!byId[k])delete s.answers[k]});
+    s.order.forEach(id=>{if(!s.perm[id])s.perm[id]=makePerm(byId[id])})});
+  return d;
+}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(DB))}catch(e){}}
+window.addEventListener('beforeunload',save);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+const S=()=>DB.sessions[DB.active];
+
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function makePerm(q){const idx=q.choices.map((_,i)=>i);return q.fixedOrder?idx:shuffle(idx)}
+function fmtDate(t){const d=new Date(t);return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+' '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})}
+function md(t){
+  const lines=esc(t).split(/\n/);let out='',inList=false;
+  for(let l of lines){
+    l=l.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/(^|[^*])\*(?!\s)(.+?)\*/g,'$1<i>$2</i>');
+    if(/^\s*([-•*]|\d+\.)\s+/.test(l)){if(!inList){out+='<ul>';inList=true}out+='<li>'+l.replace(/^\s*([-•*]|\d+\.)\s+/,'')+'</li>'}
+    else{if(inList){out+='</ul>';inList=false}if(l.trim())out+='<p>'+l.replace(/^#+\s*/,'')+'</p>'}
+  }
+  if(inList)out+='</ul>';return out;
+}
+function destroyCharts(){charts.forEach(c=>c.destroy());charts=[]}
+const mastery=o=>o.n?((o.c-o.shaky*0.5)/o.n):0;
+const band=p=>p>=0.8?['s','Strong']:p>=0.6?['m','Developing']:['w','Weak'];
+const bandColor=m=>m>=.8?'#1f7a4d':m>=.6?'#d08a1b':'#b42318';
+
+/* latest answer per question across all sessions */
+function allAnswers(){
+  const m={};
+  Object.values(DB.sessions).forEach(s=>Object.entries(s.answers).forEach(([id,a])=>{if(!m[id]||a.at>m[id].at)m[id]=Object.assign({sid:s.id},a)}));
+  return m;
+}
+function attempts(){const m={};Object.values(DB.sessions).forEach(s=>Object.keys(s.answers).forEach(id=>m[id]=(m[id]||0)+1));return m}
+function aggregate(ans,keyFn){
+  const m={};Object.keys(ans).forEach(id=>{const q=byId[id];if(!q)return;const k=keyFn(q),a=ans[id];m[k]=m[k]||{n:0,c:0,shaky:0,ms:0,missed:[]};
+    m[k].n++;m[k].ms+=a.ms||0;if(a.correct){m[k].c++;if(a.conf==='unsure')m[k].shaky++}else m[k].missed.push(id)});
+  return m;
+}
+
+/* ---------- Home ---------- */
+const builder={size:20,topics:new Set(TOPIC_ORDER),pool:'all',order:'mixed',name:''};
+function poolIds(){
+  const all=allAnswers();
+  return QUESTIONS.filter(q=>builder.topics.has(q.topic)).filter(q=>{
+    const a=all[q.id];
+    if(builder.pool==='unseen')return !a;
+    if(builder.pool==='missed')return a&&(!a.correct||a.conf==='unsure');
+    if(builder.pool==='flagged')return !!DB.flags[q.id];
+    return true}).map(q=>q.id);
+}
+function pickBalanced(ids,n){
+  // round-robin across topics, and across subtopics within a topic, so short tests still cover the selected material evenly
+  const byT={};ids.forEach(id=>{const q=byId[id];(byT[q.topic]=byT[q.topic]||{})[q.subtopic]=(byT[q.topic][q.subtopic]||[]).concat(id)});
+  const queues=shuffle(Object.keys(byT)).map(t=>{const subs=Object.values(byT[t]).map(shuffle);const out=[];let k=0;
+    while(subs.some(s=>s.length)){const ord=shuffle(subs.filter(s=>s.length));ord.forEach(s=>out.push(s.shift()));if(++k>50)break}return out});
+  const res=[];while(res.length<n&&queues.some(q=>q.length)){for(const q of queues){if(res.length>=n)break;if(q.length)res.push(q.shift())}}
+  return res;
+}
+function renderHome(){
+  view='home';destroyCharts();
+  const counts={};QUESTIONS.forEach(q=>counts[q.topic]=(counts[q.topic]||0)+1);
+  const sess=DB.list.map(id=>DB.sessions[id]);
+  const open=sess.filter(s=>!s.done&&Object.keys(s.answers).length<s.order.length);
+  const past=sess.filter(s=>!open.includes(s));
+  const all=allAnswers(),allIds=Object.keys(all),allRight=allIds.filter(i=>all[i].correct).length;
+  const T=aggregate(all,q=>q.topic);
+  app.innerHTML=`
+  <h1>Pulmonary Physiology Exam Practice</h1>
+  <p class="sub">${QUESTIONS.length} original questions written in the style of the retired 2025 pulmonary exam items and the Questions of the Day, covering every lecture and small group. Take the full practice exam or build shorter tests; your strengths/weaknesses report is available at any point, even mid-test.</p>
+  ${open.length?`<div class="card"><h2>Continue where you left off</h2>${open.map(s=>sessRow(s,true)).join('')}</div>`:''}
+  <div class="card">
+    <h2>Start a test</h2>
+    <div class="lab">Length</div>
+    <div class="row"><div class="seg" id="sizes">${[10,20,30,50,'all'].map(v=>`<button data-v="${v}">${v==='all'?'Full exam':v+' Q'}</button>`).join('')}</div>
+      <label class="note">or <input type="number" id="csize" min="1" max="${QUESTIONS.length}" style="width:74px" placeholder="#"> questions</label></div>
+    <div class="lab">Topics <button class="ghost sm" id="tall">all</button><button class="ghost sm" id="tnone">none</button></div>
+    <div class="chips" id="chips">${TOPIC_ORDER.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)} <small>${counts[t]||0}</small></span>`).join('')}</div>
+    <div class="lab">Question pool</div>
+    <div class="seg" id="pools"><button data-v="all">All questions</button><button data-v="unseen">Not yet answered</button><button data-v="missed">Missed or unsure before</button><button data-v="flagged">Flagged ★</button></div>
+    <div class="lab">Order</div>
+    <div class="seg" id="orders"><button data-v="mixed">Mixed topics (exam-like)</button><button data-v="grouped">Grouped by topic</button></div>
+    <div class="row" style="margin-top:16px">
+      <input type="text" id="tname" placeholder="Name this test (optional)" style="flex:1;min-width:180px" value="${esc(builder.name)}">
+      <span class="note" id="nsel"></span>
+      <button class="primary" id="go">Start</button>
+    </div>
+    <p class="note" style="margin:10px 0 0">Short tests draw evenly across the topics and subtopics you pick, from the same question bank as the full exam.</p>
+  </div>
+  <div class="card">
+    <div class="row"><h2 style="margin:0">Overall performance</h2><span class="spacer"></span>${allIds.length?'<button class="primary" onclick="openReport(\'all\')">📊 Full report (all tests)</button>':''}</div>
+    ${allIds.length?`<p class="note" style="margin:6px 0 12px">${allIds.length} of ${QUESTIONS.length} questions answered at least once · ${Math.round(allRight/allIds.length*100)}% correct on your latest attempt at each.</p>
+    <div class="minibars">${TOPIC_ORDER.map(t=>{const o=T[t];if(!o)return `<span>${esc(SHORT[t])}</span><div class="mb"></div><span class="note">not started</span>`;const m=mastery(o);
+      return `<span>${esc(SHORT[t])}</span><div class="mb"><i style="width:${Math.round(m*100)}%;background:${bandColor(m)}"></i></div><span>${o.c}/${o.n} <span class="note">(${counts[t]})</span></span>`}).join('')}</div>`
+    :'<p class="note" style="margin:6px 0 0">Answer a few questions and your strengths and weaknesses will show up here.</p>'}
+  </div>
+  ${past.length?`<div class="card"><h2>Finished tests</h2>${past.map(s=>sessRow(s,false)).join('')}</div>`:''}
+  <div class="card note">
+    <b style="color:var(--ink)">How it works</b><br>
+    • Keyboard: <b>1–5</b> pick an answer, <b>Enter</b> submits / goes next.<br>
+    • Tap <b>Sure</b> or <b>Unsure</b> before submitting. Correct-but-unsure answers count as "shaky" in the report.<br>
+    • After each answer you see the explanation, why each wrong option is wrong, and the learning objective. <b>Discuss</b> opens an AI tutor with the question pre-loaded.<br>
+    • <b>📊 Performance</b> (top of every question) shows your live report for the current test without ending it. The topic strip under it updates after every answer.<br>
+    • Everything saves automatically in this browser after every click, so you can close the tab and resume later. Each person's progress stays on their own computer.<br>
+    <div class="row" style="margin-top:10px"><button class="sm" id="exp">⬇ Export my progress</button><button class="sm" id="imp">⬆ Import progress</button><input type="file" id="impf" accept="application/json" class="hidden"><span class="spacer"></span><button class="sm danger" id="reset">Erase all progress</button></div>
+    <div style="margin-top:6px">Use export/import to move your progress to another computer or browser.</div>
+  </div>
+  <p class="note" style="text-align:center">Unofficial, student-made study aid for MEDC 30504 (Cell &amp; Organ Physiology). Not affiliated with or reviewed by course faculty. Questions are original and AI-assisted; they were checked but may contain errors, so verify against lecture materials.</p>`;
+  // builder wiring
+  const paint=()=>{
+    document.querySelectorAll('#sizes button').forEach(b=>b.classList.toggle('on',String(builder.size)===b.dataset.v));
+    document.querySelectorAll('#pools button').forEach(b=>b.classList.toggle('on',builder.pool===b.dataset.v));
+    document.querySelectorAll('#orders button').forEach(b=>b.classList.toggle('on',builder.order===b.dataset.v));
+    document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',builder.topics.has(c.dataset.t)));
+    const avail=poolIds().length,n=builder.size==='all'?avail:Math.min(builder.size,avail);
+    document.getElementById('nsel').textContent=avail?`${n} question${n===1?'':'s'}${n<(builder.size==='all'?avail:builder.size)?' (all available)':''} · ${avail} in pool`:'No questions match';
+    const go=document.getElementById('go');go.disabled=!n;go.textContent=n?`Start ${n}-question test`:'Start';
+  };
+  document.querySelectorAll('#sizes button').forEach(b=>b.onclick=()=>{builder.size=b.dataset.v==='all'?'all':+b.dataset.v;document.getElementById('csize').value='';paint()});
+  document.getElementById('csize').oninput=e=>{const v=parseInt(e.target.value);if(v>0){builder.size=v;paint()}};
+  document.querySelectorAll('#pools button').forEach(b=>b.onclick=()=>{builder.pool=b.dataset.v;paint()});
+  document.querySelectorAll('#orders button').forEach(b=>b.onclick=()=>{builder.order=b.dataset.v;paint()});
+  document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const t=c.dataset.t;builder.topics.has(t)?builder.topics.delete(t):builder.topics.add(t);paint()});
+  document.getElementById('tall').onclick=()=>{builder.topics=new Set(TOPIC_ORDER);paint()};
+  document.getElementById('tnone').onclick=()=>{builder.topics=new Set();paint()};
+  document.getElementById('tname').oninput=e=>builder.name=e.target.value;
+  document.getElementById('go').onclick=()=>{
+    const ids=poolIds(),full=builder.size==='all'&&builder.pool==='all'&&builder.topics.size===TOPIC_ORDER.length;
+    let pick=builder.size==='all'?shuffle(ids):pickBalanced(ids,builder.size);
+    pick=builder.order==='mixed'?shuffle(pick):TOPIC_ORDER.flatMap(t=>pick.filter(i=>byId[i].topic===t));
+    const tl=builder.topics.size===TOPIC_ORDER.length?'all topics':[...builder.topics].map(t=>SHORT[t]).join(', ');
+    const poolName={all:'',unseen:' · unseen',missed:' · missed/unsure',flagged:' · flagged'}[builder.pool];
+    const name=builder.name.trim()||(full?'Full practice exam':`${pick.length}-question test · ${tl}${poolName}`);
+    builder.name='';startSession(pick,name);
+  };
+  paint();
+  document.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{const id=b.dataset.id,a=b.dataset.act;
+    if(a==='resume'){DB.active=id;save();resume()}else if(a==='report'){DB.active=id;save();openReport(id)}
+    else if(a==='review'){DB.active=id;DB.sessions[id].pos=0;save();renderQ()}
+    else if(a==='del'){if(confirm('Delete "'+DB.sessions[id].name+'" and its answers?')){delete DB.sessions[id];DB.list=DB.list.filter(x=>x!==id);if(DB.active===id)DB.active=null;save();renderHome()}}});
+  document.getElementById('exp').onclick=exportData;
+  document.getElementById('imp').onclick=()=>document.getElementById('impf').click();
+  document.getElementById('impf').onchange=importData;
+  document.getElementById('reset').onclick=()=>{if(confirm('Erase ALL tests, answers and flags saved in this browser? This cannot be undone.')){DB=blank();save();renderHome()}};
+  window.scrollTo(0,0);
+}
+function sessRow(s,open){
+  const n=s.order.length,ids=Object.keys(s.answers),d=ids.length,r=ids.filter(i=>s.answers[i].correct).length;
+  return `<div class="sess"><div style="flex:1;min-width:0"><b>${esc(s.name)}</b><div class="note">${fmtDate(s.created)} · ${d}/${n} answered${d?` · ${r}/${d} correct (${Math.round(r/d*100)}%)`:''}</div>
+    ${open?`<div class="prog"><i style="width:${d/n*100}%"></i></div>`:''}</div>
+    ${d?`<button class="sm" data-act="report" data-id="${s.id}">📊 Report</button>`:''}
+    ${open?`<button class="sm primary" data-act="resume" data-id="${s.id}">Resume</button>`:`<button class="sm" data-act="review" data-id="${s.id}">Review</button>`}
+    <button class="sm ghost" data-act="del" data-id="${s.id}" title="Delete">✕</button></div>`;
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify(DB)],{type:'application/json'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='pulm-practice-progress-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.sessions)throw 0;let k=0;
+    Object.values(d.sessions).forEach(s=>{if(!DB.sessions[s.id]){DB.sessions[s.id]=s;DB.list.push(s.id);k++}});
+    Object.assign(DB.flags,d.flags||{});Object.assign(DB.chats,d.chats||{});
+    DB.list.sort((a,b)=>DB.sessions[b].created-DB.sessions[a].created);save();DB=load();alert('Imported '+k+' test(s).');renderHome()}catch(_){alert('That file does not look like an exported progress file.')}};
+  r.readAsText(f);
+}
+
+/* ---------- Sessions ---------- */
+function startSession(ids,name){
+  const perm={};ids.forEach(id=>perm[id]=makePerm(byId[id]));
+  const id='s'+Date.now().toString(36);
+  DB.sessions[id]={id,name,created:Date.now(),order:ids,perm,answers:{},pos:0,done:false};
+  DB.list.unshift(id);DB.active=id;save();renderQ();
+}
+function resume(){const s=S();let p=s.order.findIndex(id=>!s.answers[id]);s.pos=p<0?s.order.length-1:p;save();renderQ()}
+
+/* ---------- Question screen ---------- */
+let cur={sel:null,conf:null,t0:0};
+function figBlock(q){
+  let h='';
+  if(q.figure&&window.FIG){const f=FIG.render(q.figure);if(f)h+=`<div class="fig">${f}</div>`}
+  if(q.table)h+=`<table class="qtable"><tr>${q.table.head.map(c=>`<th>${esc(c)}</th>`).join('')}</tr>${q.table.rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</table>`;
+  return h;
+}
+function liveStrip(s){
+  if(!DB.prefs.live)return '';
+  const T=aggregate(s.answers,q=>q.topic),inS={};s.order.forEach(id=>{const t=byId[id].topic;inS[t]=(inS[t]||0)+1});
+  return `<div class="live">${TOPIC_ORDER.filter(t=>inS[t]).map(t=>{const o=T[t];const m=o?mastery(o):0;
+    return `<span class="lt" onclick="openReport('${s.id}')" title="${esc(t)}: ${o?o.c+'/'+o.n+' correct':'none answered yet'} of ${inS[t]} in this test">${esc(SHORT[t])} <b>${o?o.c+'/'+o.n:'–'}</b><span class="mb"><i style="width:${o?Math.max(4,m*100):0}%;background:${o?bandColor(m):'#eee'}"></i></span></span>`}).join('')}</div>`;
+}
+function renderQ(){
+  view='q';destroyCharts();
+  const s=S();if(!s){renderHome();return}
+  const id=s.order[s.pos],q=byId[id],perm=s.perm[id],ans=s.answers[id];
+  const n=s.order.length,done=Object.keys(s.answers).length,right=Object.values(s.answers).filter(a=>a.correct).length;
+  cur={sel:ans?ans.choice:null,conf:ans?ans.conf:null,t0:Date.now()};
+  app.innerHTML=`
+  <div class="topbar"><span><b style="color:var(--ink)">Q ${s.pos+1}</b> / ${n}</span><div class="bar"><i style="width:${done/n*100}%"></i></div><span>${right}/${done} correct${done?` (${Math.round(right/done*100)}%)`:''}</span>
+    <button class="sm" onclick="openReport('${s.id}')">📊 Performance</button>
+    <button class="ghost sm" id="livet" title="Show/hide live topic strip">${DB.prefs.live?'Hide':'Show'} live stats</button>
+    <button class="ghost sm" onclick="save();renderHome()">Menu</button></div>
+  ${liveStrip(s)}
+  <div class="card" id="qcard">
+    <div class="row" style="margin-bottom:4px"><span class="tag" id="qtag">${ans?esc(q.topic)+' · '+esc(q.subtopic):'Question '+(s.pos+1)}</span><span class="tag" title="difficulty">${'●'.repeat(q.difficulty)}${'○'.repeat(3-q.difficulty)}</span><span class="spacer"></span>
+      <button class="ghost sm" id="flag" title="Flag to review later">${DB.flags[id]?'★ Flagged':'☆ Flag'}</button></div>
+    <div class="stem">${esc(q.stem)}</div>
+    ${figBlock(q)}
+    <div id="opts">${perm.map((ci,k)=>`<button class="opt" data-ci="${ci}"><span class="k">${String.fromCharCode(65+k)}</span><span class="t">${esc(q.choices[ci])}<span class="why hidden"></span></span></button>`).join('')}</div>
+    <div class="conf" id="conf">Confidence: <button data-c="sure">Sure</button><button data-c="unsure">Unsure / guessed</button></div>
+    <div id="fb"></div>
+  </div>
+  <div class="footer">
+    <button onclick="prevQ()" ${s.pos===0?'disabled':''}>← Back</button>
+    <button class="ghost" onclick="toggleNav()">Jump to…</button>
+    <span class="kbd">1–5 select · Enter submit/next</span><span class="spacer"></span>
+    <button onclick="finish()">Finish &amp; report</button>
+    <button class="primary" id="act"></button>
+  </div>
+  <div class="card hidden" id="navc"><div class="row"><b>Questions in this test</b><span class="note">green = correct · red = wrong · ★ = flagged</span></div><div class="nav">${s.order.map((qid,i)=>{const a=s.answers[qid];
+    return `<button class="${a?(a.correct?'c':'x'):''} ${i===s.pos?'cur':''} ${DB.flags[qid]?'f':''}" onclick="jump(${i})">${i+1}${DB.flags[qid]?'★':''}</button>`}).join('')}</div></div>`;
+  document.getElementById('livet').onclick=()=>{DB.prefs.live=!DB.prefs.live;save();renderQ()};
+  document.getElementById('flag').onclick=()=>{DB.flags[id]=!DB.flags[id];if(!DB.flags[id])delete DB.flags[id];save();document.getElementById('flag').textContent=DB.flags[id]?'★ Flagged':'☆ Flag'};
+  document.querySelectorAll('#conf button').forEach(b=>b.onclick=()=>{if(s.answers[id])return;cur.conf=b.dataset.c;paintConf()});
+  document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(s.answers[id])return;cur.sel=+b.dataset.ci;paintSel()});
+  if(ans)showFeedback();else{paintSel();paintConf()}
+  window.scrollTo(0,0);
+}
+function toggleNav(){document.getElementById('navc').classList.toggle('hidden');document.getElementById('navc').scrollIntoView({behavior:'smooth'})}
+function jump(i){const s=S();s.pos=i;save();renderQ()}
+function paintSel(){document.querySelectorAll('.opt').forEach(b=>b.classList.toggle('sel',+b.dataset.ci===cur.sel));const a=document.getElementById('act');a.textContent='Submit';a.disabled=cur.sel===null;a.onclick=submit}
+function paintConf(){document.querySelectorAll('#conf button').forEach(b=>b.classList.toggle('on',b.dataset.c===cur.conf))}
+function submit(){
+  const s=S(),id=s.order[s.pos],q=byId[id];if(cur.sel===null||s.answers[id])return;
+  s.answers[id]={choice:cur.sel,correct:cur.sel===q.answer,conf:cur.conf||'unrated',ms:Date.now()-cur.t0,at:Date.now()};
+  if(Object.keys(s.answers).length>=s.order.length){s.done=true;s.finishedAt=Date.now()}
+  save();
+  // refresh live strip + top counts without losing scroll position
+  const y=window.scrollY;renderQ();window.scrollTo(0,y);
+  const fb=document.getElementById('fb');if(fb)fb.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function showFeedback(){
+  const s=S(),id=s.order[s.pos],q=byId[id],a=s.answers[id];
+  document.getElementById('qtag').textContent=q.topic+' · '+q.subtopic;
+  document.querySelectorAll('.opt').forEach(b=>{
+    const ci=+b.dataset.ci;b.classList.add('locked');b.classList.remove('sel');
+    if(ci===q.answer)b.classList.add('correct');else if(ci===a.choice)b.classList.add('wrong');
+    const w=b.querySelector('.why');
+    if(ci!==q.answer&&q.whyWrong[ci]){w.textContent=q.whyWrong[ci];w.classList.remove('hidden');if(ci!==a.choice)w.style.opacity=.85}
+  });
+  document.querySelectorAll('#conf button').forEach(b=>{b.disabled=true;b.classList.toggle('on',b.dataset.c===a.conf)});
+  document.getElementById('fb').innerHTML=`<div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+    <div class="verdict ${a.correct?'ok':'bad'}">${a.correct?(a.conf==='unsure'?'Correct, but you marked it unsure':'Correct'):'Incorrect'}</div>
+    <div class="expl">${esc(q.explanation)}</div>
+    <div class="obj"><b>Objective:</b> ${esc(q.objective)}<br><b>Source:</b> ${esc(q.source)}</div>
+    <div class="row" style="margin-top:12px"><button id="discussBtn">💬 Discuss this question</button></div>
+    <div class="chat hidden" id="chat">
+      <div class="msgs" id="msgs"></div>
+      <div class="quick" id="quick"><button>Why is my answer wrong?</button><button>Walk me through the mechanism step by step</button><button>Show me the equation and plug in the numbers</button><button>Give me a similar question to try</button></div>
+      <div class="chatin"><textarea id="cin" placeholder="Ask anything about this question…"></textarea><button class="primary" id="csend">Send</button></div>
+    </div></div>`;
+  const chat=document.getElementById('chat');
+  document.getElementById('discussBtn').onclick=()=>{chat.classList.toggle('hidden');if(!chat.classList.contains('hidden'))document.getElementById('cin').focus()};
+  document.querySelectorAll('#quick button').forEach(b=>b.onclick=()=>sendChat(b.textContent));
+  document.getElementById('csend').onclick=()=>sendChat();
+  document.getElementById('cin').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}e.stopPropagation()});
+  if((DB.chats[id]||[]).length){chat.classList.remove('hidden');paintChat()}
+  const act=document.getElementById('act');
+  act.disabled=false;act.textContent=s.pos<s.order.length-1?'Next →':'See report';act.onclick=nextQ;
+}
+function nextQ(){const s=S();if(s.pos<s.order.length-1){s.pos++;save();renderQ()}else finish()}
+function prevQ(){const s=S();if(s.pos>0){s.pos--;save();renderQ()}}
+function finish(){
+  const s=S(),left=s.order.length-Object.keys(s.answers).length;
+  if(!Object.keys(s.answers).length){alert('Answer at least one question first.');return}
+  if(left>0&&!confirm(`${left} question${left>1?'s are':' is'} still unanswered. Finish this test now? (Choose Cancel to keep going. You can also check your performance at any time with 📊 Performance without finishing.)`))return;
+  s.done=true;s.finishedAt=Date.now();save();openReport(s.id);
+}
+
+/* ---------- Discussion ---------- */
+const HAS_AI=!!(window.cowork&&window.cowork.askClaude);
+const FIGDESC={pv:'static pressure–volume curves of lung, chest wall and respiratory system (A = TLC, B = chest-wall resting volume, C = FRC, D = RV)',fv:'flow–volume loop(s)',fvgrid:'a panel of flow–volume loops labeled A–E',hb:'HbO₂ dissociation curve(s)',spiro:'a spirogram with lettered volume brackets',cpet:'incremental exercise test (A start, B anaerobic threshold, C respiratory compensation point, D peak)',breath:'volume, alveolar and pleural pressure over one tidal breath (A start, B mid-inspiration, C end-inspiration, D mid-expiration, E end-expiration)',fevt:'forced expiratory volume–time curves'};
+function figText(q){return q.figure?('(Figure shown: '+(FIGDESC[q.figure.type]||q.figure.type)+'. Spec: '+JSON.stringify(q.figure)+'. Its findings are as described in the explanation.)'):''}
+function tableText(q){return q.table?('TABLE: '+[q.table.head.join(' | ')].concat(q.table.rows.map(r=>r.join(' | '))).join('; ')):''}
+function externalPrompt(q,a,text){
+  const L=['I am a first-year medical student studying pulmonary physiology (lung mechanics, alveolar gas equation PAO₂ = FiO₂(Patm − 47) − PaCO₂/R, A–a gradient, V/Q, O₂ content, acid–base, control of breathing, PFTs). Please tutor me on this practice question. Treat the answer key as correct, find my misconception, and explain the mechanism step by step as an arrow chain. Keep it focused.','','QUESTION: '+q.stem];
+  if(q.figure)L.push(figText(q));if(q.table)L.push(tableText(q));
+  L.push('','OPTIONS:',...q.choices.map(c=>'- '+c),'','CORRECT ANSWER: '+q.choices[q.answer],'MY ANSWER: '+q.choices[a.choice]+(a.correct?' (correct)':' (incorrect)'));
+  if(!a.correct&&q.whyWrong[a.choice])L.push('Why my answer is wrong (per key): '+q.whyWrong[a.choice]);
+  L.push('','EXPLANATION: '+q.explanation,'','MY QUESTION: '+text);
+  return L.join('\n');
+}
+function openClaude(p){try{navigator.clipboard&&navigator.clipboard.writeText(p)}catch(e){}window.open('https://claude.ai/new?q='+encodeURIComponent(p.slice(0,6000)),'_blank','noopener')}
+function paintChat(){
+  const s=S(),id=s.order[s.pos],m=DB.chats[id]||[];
+  const el=document.getElementById('msgs');el.innerHTML=m.map(x=>`<div class="msg ${x.r}">${x.r==='a'?md(x.t):esc(x.t)}</div>`).join('');el.scrollTop=el.scrollHeight;
+}
+async function sendChat(text){
+  const s=S(),id=s.order[s.pos],q=byId[id],a=s.answers[id];
+  const inp=document.getElementById('cin');text=(text||inp.value).trim();if(!text)return;inp.value='';
+  DB.chats[id]=DB.chats[id]||[];
+  if(!HAS_AI){openClaude(externalPrompt(q,a,text));
+    DB.chats[id].push({r:'u',t:text},{r:'a',t:'Opened **Claude** in a new tab with this question, your answer and the explanation pre-loaded (also copied to your clipboard; paste it into any AI chat if the tab did not open).'});save();paintChat();return}
+  DB.chats[id].push({r:'u',t:text});save();paintChat();
+  const msgs=document.getElementById('msgs');const ty=document.createElement('div');ty.className='typing';ty.textContent='Tutor is thinking…';msgs.appendChild(ty);msgs.scrollTop=msgs.scrollHeight;
+  const ctx={question:q.stem,figure:figText(q)||null,table:tableText(q)||null,options:q.choices,correct_answer:q.choices[q.answer],student_answer:q.choices[a.choice],student_was_correct:a.correct,student_confidence:a.conf,
+    explanation:q.explanation,why_each_wrong_option_is_wrong:q.choices.map((c,i)=>i===q.answer?null:{option:c,why:q.whyWrong[i]}).filter(Boolean),topic:q.topic+' / '+q.subtopic,objective:q.objective};
+  const hist=DB.chats[id].slice(0,-1).map(x=>(x.r==='u'?'Student: ':'Tutor: ')+x.t).join('\n\n');
+  const prompt="You are a warm, rigorous pulmonary physiology tutor for a first-year medical student (Pritzker Cell & Organ Physiology, pulmonary exam soon). The course uses Chicago Patm 747 mm Hg, PH₂O 47, R 0.8, PAO₂ = FiO₂(Patm − 47) − PaCO₂/R, normal A–a < 10, CaO₂ = 1.39·Hb·SaO₂ + 0.003·PaO₂, two-alveolus models, strength-vs-load for hypercapnia, and 'chest wall wants to be big, lungs want to be small'. Data item 1 is the practice question with its answer key and explanation (treat the key as correct). Data item 2 is the conversation so far. Data item 3 is the student's new message. Reply directly: diagnose the misconception if there is one, explain the mechanism as a clear arrow chain, show the arithmetic when numbers are involved, and keep it focused (about 80–200 words unless they ask for more). If asked for a similar question, write one new MCQ with 5 options and do NOT reveal the answer until they respond. Plain text with short bullets or **bold** only; no headings.";
+  let reply;
+  try{const r=await window.cowork.askClaude(prompt,[ctx,hist||'(no previous messages)',text]);reply=r.isError?('Sorry, the tutor could not respond ('+(r.text||'error')+'). Try again.'):r.text}
+  catch(e){reply=String(e.message||e)}
+  ty.remove();DB.chats[id].push({r:'a',t:reply});save();paintChat();
+}
+
+/* ---------- Report ---------- */
+function openReport(scope){
+  view='report';destroyCharts();
+  const isAll=scope==='all',s=isAll?null:DB.sessions[scope];
+  const ans=isAll?allAnswers():s.answers,ids=Object.keys(ans).filter(i=>byId[i]);
+  if(!ids.length){alert('Answer at least one question first.');return}
+  const inScope=isAll?QUESTIONS.map(q=>q.id):s.order;
+  const T=aggregate(ans,q=>q.topic),ST=aggregate(ans,q=>q.topic+'||'+q.subtopic);
+  const scopeCount={};inScope.forEach(id=>{const t=byId[id].topic;scopeCount[t]=(scopeCount[t]||0)+1});
+  const total=ids.length,right=ids.filter(i=>ans[i].correct).length,shaky=ids.filter(i=>ans[i].correct&&ans[i].conf==='unsure').length;
+  const overconf=ids.filter(i=>!ans[i].correct&&ans[i].conf==='sure').length;
+  const avgS=Math.round(ids.reduce((x,i)=>x+(ans[i].ms||0),0)/total/1000);
+  const topics=TOPIC_ORDER.filter(t=>T[t]);
+  const subs=Object.entries(ST).map(([k,o])=>({topic:k.split('||')[0],sub:k.split('||')[1],...o,acc:o.c/o.n,mas:mastery(o)})).sort((a,b)=>a.mas-b.mas||b.n-a.n);
+  const weakSubs=subs.filter(x=>x.mas<0.6),strongSubs=subs.filter(x=>x.mas>=0.8).reverse(),midSubs=subs.filter(x=>x.mas>=.6&&x.mas<.8);
+  const untouched=TOPIC_ORDER.filter(t=>scopeCount[t]&&!T[t]);
+  const inProgress=!isAll&&Object.keys(s.answers).length<s.order.length&&!s.done;
+  const missedList=ids.filter(i=>!ans[i].correct||DB.flags[i]);
+  const sessRows=isAll?DB.list.map(id=>DB.sessions[id]).filter(x=>Object.keys(x.answers).length):[];
+  app.innerHTML=`
+  <div class="row"><h1>${isAll?'Overall performance':'Performance report'}</h1><span class="spacer"></span><button onclick="renderHome()">Menu</button>
+    ${!isAll&&inProgress?`<button class="primary" onclick="DB.active='${s.id}';renderQ()">← Back to question ${s.pos+1}</button>`:''}</div>
+  <p class="sub">${isAll?`Latest attempt at each question across ${sessRows.length} test${sessRows.length===1?'':'s'} · ${total} of ${QUESTIONS.length} questions answered.`
+    :`${esc(s.name)} · ${total} of ${s.order.length} answered${inProgress?' so far. This is a live snapshot; the test is still open and you can keep going.':'.'}`}</p>
+  <div class="card"><div class="stat">
+    <div><b>${Math.round(right/total*100)}%</b><span>${right}/${total} correct</span></div>
+    <div><b>${shaky}</b><span>correct but unsure (shaky)</span></div>
+    <div><b>${overconf}</b><span>wrong but "sure" (blind spots)</span></div>
+    <div><b>${avgS}s</b><span>avg time / question</span></div>
+  </div></div>
+  <div class="card"><h2>By topic</h2><p class="note" style="margin-top:-4px">Bar = % correct. Colored segment = confident mastery (correct and not marked unsure). Green ≥ 80%, amber 60–79%, red &lt; 60%.</p><div class="chartbox" style="height:${Math.max(220,topics.length*38+50)}px"><canvas id="c1"></canvas></div></div>
+  <div class="card">
+    <h2>Where to focus</h2>
+    ${weakSubs.length?`<h3 style="color:var(--bad)">Weak (mastery &lt; 60%)</h3><ul>${weakSubs.map(x=>`<li><b>${esc(x.sub)}</b> <span class="note">(${esc(SHORT[x.topic])})</span>: ${x.c}/${x.n} correct${x.shaky?`, ${x.shaky} shaky`:''}</li>`).join('')}</ul>`:'<p>No weak subtopics so far. 🎯</p>'}
+    ${midSubs.length?`<h3 style="color:var(--warn)">Developing (60–79%)</h3><p>${midSubs.map(x=>`${esc(x.sub)} <span class="note">(${x.c}/${x.n})</span>`).join(' · ')}</p>`:''}
+    ${strongSubs.length?`<h3 style="color:var(--ok)">Strong (mastery ≥ 80%)</h3><p>${strongSubs.map(x=>`${esc(x.sub)} <span class="note">(${x.c}/${x.n})</span>`).join(' · ')}</p>`:''}
+    ${untouched.length?`<h3 style="color:var(--mute)">Not answered yet</h3><p class="note">${untouched.map(t=>esc(SHORT[t])).join(' · ')}</p>`:''}
+    <div class="row" style="margin-top:12px"><button id="planBtn">✨ Generate a study plan from my results</button><button id="copyBtn">Copy results summary</button></div>
+    <div id="plan" class="msg a hidden" style="max-width:100%;margin-top:12px"></div>
+  </div>
+  <div class="card"><h2>Topic table</h2><table><tr><th>Topic</th><th>Correct</th><th>Shaky</th><th>Mastery</th><th></th></tr>
+    ${TOPIC_ORDER.filter(t=>scopeCount[t]).map(t=>{const o=T[t];if(!o)return `<tr><td>${esc(t)}</td><td class="note">0/${scopeCount[t]} answered</td><td></td><td></td><td><span class="pill n">Not started</span></td></tr>`;
+      const m=mastery(o),b=band(m);return `<tr><td>${esc(t)}</td><td>${o.c}/${o.n}${o.n<scopeCount[t]?` <span class="note">of ${scopeCount[t]}</span>`:''}</td><td>${o.shaky}</td><td>${Math.round(m*100)}%</td><td><span class="pill ${b[0]}">${b[1]}</span></td></tr>`}).join('')}
+  </table></div>
+  <div class="card"><h2>By subtopic</h2><div class="chartbox" id="c2box"><canvas id="c2"></canvas></div></div>
+  ${isAll&&sessRows.length?`<div class="card"><h2>Tests taken</h2><table><tr><th>Test</th><th>Date</th><th>Answered</th><th>Score</th><th></th></tr>${sessRows.map(x=>{const k=Object.keys(x.answers),r=k.filter(i=>x.answers[i].correct).length;
+    return `<tr><td>${esc(x.name)}</td><td class="note">${fmtDate(x.created)}</td><td>${k.length}/${x.order.length}</td><td>${Math.round(r/k.length*100)}%</td><td><button class="sm" onclick="openReport('${x.id}')">Report</button></td></tr>`}).join('')}</table></div>`:''}
+  <div class="card"><h2>Review missed${missedList.some(i=>DB.flags[i])?' &amp; flagged':''} questions</h2>
+    ${missedList.map(i=>{const q=byId[i],a=ans[i];return `<details><summary>${a.correct?'★':'✗'} ${esc(SHORT[q.topic])} · ${esc(q.subtopic)}</summary>
+      <div class="stem" style="font-size:14.5px">${esc(q.stem)}</div>${figBlock(q)}
+      <p><b>Your answer:</b> ${esc(q.choices[a.choice])}${a.correct?'':` <span class="note">: ${esc(q.whyWrong[a.choice])}</span>`}</p>
+      <p><b style="color:var(--ok)">Correct:</b> ${esc(q.choices[q.answer])}</p><div class="expl note" style="color:#333">${esc(q.explanation)}</div>
+      ${!isAll?`<div class="row" style="margin-top:8px"><button class="sm" onclick="DB.active='${s.id}';jump(${s.order.indexOf(i)})">Open question</button></div>`:''}</details>`}).join('')||'<p class="note">Nothing missed yet.</p>'}
+    <div class="row" style="margin-top:12px">${ids.some(i=>!ans[i].correct)?`<button class="primary" id="rmBtn">New test: retry missed</button>`:''}<button id="rwBtn">New test: weak topics</button></div>
+  </div>`;
+  // charts
+  if(window.Chart){
+    const c1=new Chart(document.getElementById('c1'),{type:'bar',data:{labels:topics.map(t=>SHORT[t]),datasets:[
+      {label:'Confident mastery %',data:topics.map(t=>Math.round(mastery(T[t])*100)),backgroundColor:topics.map(t=>bandColor(mastery(T[t]))),stack:'s',barThickness:20},
+      {label:'Accuracy %',data:topics.map(t=>Math.round(T[t].c/T[t].n*100)-Math.round(mastery(T[t])*100)),backgroundColor:'rgba(120,120,120,.25)',stack:'s',barThickness:20}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,scales:{x:{stacked:true,max:100,min:0,ticks:{callback:v=>v+'%'}},y:{stacked:true}},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const t=topics[c.dataIndex];return c.datasetIndex===0?`Mastery ${Math.round(mastery(T[t])*100)}%`:`Accuracy ${Math.round(T[t].c/T[t].n*100)}% (${T[t].c}/${T[t].n})`}}}}}});
+    const sorted=subs.slice().sort((a,b)=>TOPIC_ORDER.indexOf(a.topic)-TOPIC_ORDER.indexOf(b.topic)||a.mas-b.mas);
+    document.getElementById('c2box').style.height=Math.max(220,sorted.length*24+60)+'px';
+    const c2=new Chart(document.getElementById('c2'),{type:'bar',data:{labels:sorted.map(x=>x.sub),datasets:[{label:'Mastery %',data:sorted.map(x=>Math.max(2,Math.round(x.mas*100))),backgroundColor:sorted.map(x=>bandColor(x.mas)),barThickness:14}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:false,scales:{x:{max:100,min:0,ticks:{callback:v=>v+'%'}}},plugins:{legend:{display:false},tooltip:{callbacks:{title:c=>sorted[c[0].dataIndex].sub+' · '+SHORT[sorted[c[0].dataIndex].topic],label:c=>{const x=sorted[c.dataIndex];return `${x.c}/${x.n} correct${x.shaky?`, ${x.shaky} shaky`:''} · mastery ${Math.round(x.mas*100)}%`}}}}}});
+    charts.push(c1,c2);
+  } else { // offline: simple HTML bars instead of Chart.js
+    const box=document.getElementById('c1').parentNode;box.style.height='auto';
+    box.innerHTML=`<div class="minibars">${topics.map(t=>{const m=mastery(T[t]);return `<span>${esc(SHORT[t])}</span><div class="mb"><i style="width:${Math.max(3,Math.round(m*100))}%;background:${bandColor(m)}"></i></div><span>${T[t].c}/${T[t].n}</span>`}).join('')}</div>`;
+    const b2=document.getElementById('c2box');b2.style.height='auto';
+    b2.innerHTML=`<div class="minibars">${subs.slice().sort((a,b)=>TOPIC_ORDER.indexOf(a.topic)-TOPIC_ORDER.indexOf(b.topic)||a.mas-b.mas).map(x=>`<span>${esc(x.sub)}</span><div class="mb"><i style="width:${Math.max(3,Math.round(x.mas*100))}%;background:${bandColor(x.mas)}"></i></div><span>${x.c}/${x.n}</span>`).join('')}</div>`}
+  const summary=()=>[`Pulmonary practice exam (${isAll?'all tests combined':s.name}): ${right}/${total} correct (${Math.round(right/total*100)}%), ${shaky} shaky, ${overconf} confident-but-wrong.`,
+    'By topic: '+topics.map(t=>`${SHORT[t]} ${T[t].c}/${T[t].n}`).join('; '),
+    'Weak subtopics: '+(weakSubs.map(x=>`${x.sub} (${x.c}/${x.n})`).join('; ')||'none'),
+    'Missed: '+ids.filter(i=>!ans[i].correct).map(i=>`${byId[i].subtopic}: ${byId[i].objective}`).join(' | ')].join('\n');
+  document.getElementById('copyBtn').onclick=async e=>{try{await navigator.clipboard.writeText(summary());e.target.textContent='Copied ✓'}catch(_){prompt('Copy this:',summary())}};
+  document.getElementById('planBtn').onclick=async()=>{
+    const box=document.getElementById('plan');box.classList.remove('hidden');
+    const ask='I am a first-year medical student preparing for a pulmonary physiology exam. Here are my practice-exam results. Identify the 3–5 underlying misconceptions (group related misses); for each give the core idea to fix, a one-line arrow-chain or equation to remember, and a quick self-test question. End with a prioritized 90-minute review plan.\n\n';
+    if(!HAS_AI){openClaude(ask+summary());box.innerHTML='Opened <b>Claude</b> in a new tab with your results pre-loaded (also copied to your clipboard).';return}
+    box.innerHTML='<span class="typing">Building your plan…</span>';
+    try{const missed=ids.filter(i=>!ans[i].correct).map(i=>({subtopic:byId[i].subtopic,topic:byId[i].topic,objective:byId[i].objective,student_chose:byId[i].choices[ans[i].choice],correct:byId[i].choices[byId[i].answer]}));
+      const r=await window.cowork.askClaude("You are a pulmonary physiology tutor. Data 1 is the student's per-topic and per-subtopic results; data 2 lists missed questions with what they chose vs the correct answer. Identify the 3–5 underlying misconceptions or concept gaps (group related misses), and for each give: the core idea to fix in 1–2 sentences, a one-line arrow-chain or equation to remember, and one quick self-test prompt. End with a prioritized 90-minute review plan. Plain text, short bullets, **bold** for each gap header. Under 400 words.",[summary(),missed]);
+      box.innerHTML=r.isError?'Could not generate plan.':md(r.text)}catch(err){box.textContent=String(err.message||err)}
+  };
+  const rm=document.getElementById('rmBtn');if(rm)rm.onclick=()=>{const m=shuffle(ids.filter(i=>!ans[i].correct));startSession(m,`Retry missed (${m.length}) · from ${isAll?'all tests':s.name}`)};
+  document.getElementById('rwBtn').onclick=()=>{
+    const weak=topics.filter(t=>mastery(T[t])<0.7);if(!weak.length){alert('No topics under 70% mastery. Nice work!');return}
+    const pool=QUESTIONS.filter(q=>weak.includes(q.topic)).map(q=>q.id);
+    if(!confirm('Start a new test with all '+pool.length+' questions from: '+weak.map(t=>SHORT[t]).join(', ')+'?'))return;
+    startSession(shuffle(pool),'Weak topics · '+weak.map(t=>SHORT[t]).join(', '))};
+  window.scrollTo(0,0);
+}
+
+/* ---------- Keyboard ---------- */
+document.addEventListener('keydown',e=>{
+  if(view!=='q'||!document.getElementById('qcard'))return;
+  if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')return;
+  const s=S(),id=s.order[s.pos];
+  if(/^[1-5]$/.test(e.key)&&!s.answers[id]){const b=document.querySelectorAll('.opt')[+e.key-1];if(b)b.click()}
+  else if(e.key==='Enter'){e.preventDefault();document.getElementById('act').click()}
+});
+
+renderHome();
+</script>
+</body>
+</html>
