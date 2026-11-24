@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pulmonary Physiology Exam Practice</title>
-<meta name="description" content="Unofficial practice exam for pulmonary physiology: statics, dynamics, ventilation, diffusion, O₂/CO₂ transport, V/Q, acid–base, control of ventilation, exercise and PFTs. Build full or short tests, see live strengths/weaknesses, progress saved in your browser.">
+<meta name="description" content="Unofficial practice exam for pulmonary physiology (212 questions incl. all QODs and retired items): statics, dynamics, ventilation, diffusion, O₂/CO₂ transport, V/Q, acid–base, control of ventilation, exercise and PFTs. Build full or short tests, see live strengths/weaknesses, progress saved in your browser.">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <style>
 :root{color-scheme:light;--bg:#f6f7f7;--card:#fff;--ink:#1d1d1f;--mute:#6b6b70;--line:#e2e4e4;--accent:#1d5c7a;--accent2:#2a7aa0;--ok:#1f7a4d;--okbg:#e8f5ee;--bad:#b42318;--badbg:#fdecea;--warn:#b26b00;--warnbg:#fff4e0;--sel:#e7f0f5}
@@ -44,6 +44,7 @@ input[type=number],input[type=text]{font:inherit;padding:6px 9px;border:1px soli
 .live .lt{display:flex;align-items:center;gap:6px;font-size:12px;background:#fff;border:1px solid var(--line);border-radius:8px;padding:4px 8px;cursor:pointer}
 .live .lt .mb{width:46px;height:5px;background:#eee;border-radius:9px;overflow:hidden}
 .live .lt .mb i{display:block;height:100%}
+.tag.src{background:#fff4e0;color:#8a5a00;font-weight:600}
 .tag{display:inline-block;font-size:12px;padding:2px 8px;border-radius:99px;background:#eef1f1;color:var(--mute);margin-right:6px}
 .stem{white-space:pre-wrap;font-size:16px;margin:6px 0 14px}
 .opt{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:11px 14px;margin:7px 0;border:1.5px solid var(--line);border-radius:10px;background:#fff;cursor:pointer}
@@ -115,12 +116,17 @@ details summary{cursor:pointer;font-weight:600}
 <body>
 <div class="wrap" id="app"></div>
 <script src="fig.js"></script>
+<script src="fig2.js"></script>
 <script src="q-mech.js"></script>
 <script src="q-gas.js"></script>
 <script src="q-trans.js"></script>
 <script src="q-vq.js"></script>
 <script src="q-abc.js"></script>
 <script src="q-pft.js"></script>
+<script src="q-fig1.js"></script>
+<script src="q-fig2.js"></script>
+<script src="q-qod.js"></script>
+<script src="q-retired.js"></script>
 <script>
 const QUESTIONS = window.QBANK;
 const STORE = 'pulm-exam-practice-v1';
@@ -179,10 +185,12 @@ function aggregate(ans,keyFn){
 }
 
 /* ---------- Home ---------- */
-const builder={size:20,topics:new Set(TOPIC_ORDER),pool:'all',order:'mixed',name:''};
+const builder={size:20,topics:new Set(TOPIC_ORDER),pool:'all',order:'mixed',src:'all',name:''};
+const SET_NAME={qod:'Question of the Day',retired:'Retired 2025 exam item',original:'Original'};
+const setOf=q=>q.set||'original';
 function poolIds(){
   const all=allAnswers();
-  return QUESTIONS.filter(q=>builder.topics.has(q.topic)).filter(q=>{
+  return QUESTIONS.filter(q=>builder.topics.has(q.topic)).filter(q=>builder.src==='all'||(builder.src==='course'?setOf(q)!=='original':setOf(q)==='original')).filter(q=>{
     const a=all[q.id];
     if(builder.pool==='unseen')return !a;
     if(builder.pool==='missed')return a&&(!a.correct||a.conf==='unsure');
@@ -207,7 +215,7 @@ function renderHome(){
   const T=aggregate(all,q=>q.topic);
   app.innerHTML=`
   <h1>Pulmonary Physiology Exam Practice</h1>
-  <p class="sub">${QUESTIONS.length} original questions written in the style of the retired 2025 pulmonary exam items and the Questions of the Day, covering every lecture and small group. Take the full practice exam or build shorter tests; your strengths/weaknesses report is available at any point, even mid-test.</p>
+  <p class="sub">${QUESTIONS.length} questions: every Question of the Day (${QUESTIONS.filter(q=>q.set==='qod').length}) and retired 2025 exam item (${QUESTIONS.filter(q=>q.set==='retired').length}), mixed in with ${QUESTIONS.filter(q=>setOf(q)==='original').length} original questions in the same style (${QUESTIONS.filter(q=>q.figure).length} with graphs) covering every lecture and small group. Take the full practice exam or build shorter tests; your strengths/weaknesses report is available at any point, even mid-test.</p>
   ${open.length?`<div class="card"><h2>Continue where you left off</h2>${open.map(s=>sessRow(s,true)).join('')}</div>`:''}
   <div class="card">
     <h2>Start a test</h2>
@@ -218,6 +226,8 @@ function renderHome(){
     <div class="chips" id="chips">${TOPIC_ORDER.map(t=>`<span class="chip" data-t="${esc(t)}">${esc(t)} <small>${counts[t]||0}</small></span>`).join('')}</div>
     <div class="lab">Question pool</div>
     <div class="seg" id="pools"><button data-v="all">All questions</button><button data-v="unseen">Not yet answered</button><button data-v="missed">Missed or unsure before</button><button data-v="flagged">Flagged ★</button></div>
+    <div class="lab">Source</div>
+    <div class="seg" id="srcs"><button data-v="all">All</button><button data-v="course">Course questions only (QOD + retired)</button><button data-v="original">Original only</button></div>
     <div class="lab">Order</div>
     <div class="seg" id="orders"><button data-v="mixed">Mixed topics (exam-like)</button><button data-v="grouped">Grouped by topic</button></div>
     <div class="row" style="margin-top:16px">
@@ -225,7 +235,7 @@ function renderHome(){
       <span class="note" id="nsel"></span>
       <button class="primary" id="go">Start</button>
     </div>
-    <p class="note" style="margin:10px 0 0">Short tests draw evenly across the topics and subtopics you pick, from the same question bank as the full exam.</p>
+    <p class="note" style="margin:10px 0 0">Short tests draw evenly across the topics and subtopics you pick, from the same question bank as the full exam. Course questions are tagged so you can tell them apart.</p>
   </div>
   <div class="card">
     <div class="row"><h2 style="margin:0">Overall performance</h2><span class="spacer"></span>${allIds.length?'<button class="primary" onclick="openReport(\'all\')">📊 Full report (all tests)</button>':''}</div>
@@ -251,6 +261,7 @@ function renderHome(){
     document.querySelectorAll('#sizes button').forEach(b=>b.classList.toggle('on',String(builder.size)===b.dataset.v));
     document.querySelectorAll('#pools button').forEach(b=>b.classList.toggle('on',builder.pool===b.dataset.v));
     document.querySelectorAll('#orders button').forEach(b=>b.classList.toggle('on',builder.order===b.dataset.v));
+    document.querySelectorAll('#srcs button').forEach(b=>b.classList.toggle('on',builder.src===b.dataset.v));
     document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',builder.topics.has(c.dataset.t)));
     const avail=poolIds().length,n=builder.size==='all'?avail:Math.min(builder.size,avail);
     document.getElementById('nsel').textContent=avail?`${n} question${n===1?'':'s'}${n<(builder.size==='all'?avail:builder.size)?' (all available)':''} · ${avail} in pool`:'No questions match';
@@ -260,16 +271,17 @@ function renderHome(){
   document.getElementById('csize').oninput=e=>{const v=parseInt(e.target.value);if(v>0){builder.size=v;paint()}};
   document.querySelectorAll('#pools button').forEach(b=>b.onclick=()=>{builder.pool=b.dataset.v;paint()});
   document.querySelectorAll('#orders button').forEach(b=>b.onclick=()=>{builder.order=b.dataset.v;paint()});
+  document.querySelectorAll('#srcs button').forEach(b=>b.onclick=()=>{builder.src=b.dataset.v;paint()});
   document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{const t=c.dataset.t;builder.topics.has(t)?builder.topics.delete(t):builder.topics.add(t);paint()});
   document.getElementById('tall').onclick=()=>{builder.topics=new Set(TOPIC_ORDER);paint()};
   document.getElementById('tnone').onclick=()=>{builder.topics=new Set();paint()};
   document.getElementById('tname').oninput=e=>builder.name=e.target.value;
   document.getElementById('go').onclick=()=>{
-    const ids=poolIds(),full=builder.size==='all'&&builder.pool==='all'&&builder.topics.size===TOPIC_ORDER.length;
+    const ids=poolIds(),full=builder.size==='all'&&builder.pool==='all'&&builder.src==='all'&&builder.topics.size===TOPIC_ORDER.length;
     let pick=builder.size==='all'?shuffle(ids):pickBalanced(ids,builder.size);
     pick=builder.order==='mixed'?shuffle(pick):TOPIC_ORDER.flatMap(t=>pick.filter(i=>byId[i].topic===t));
     const tl=builder.topics.size===TOPIC_ORDER.length?'all topics':[...builder.topics].map(t=>SHORT[t]).join(', ');
-    const poolName={all:'',unseen:' · unseen',missed:' · missed/unsure',flagged:' · flagged'}[builder.pool];
+    const poolName={all:'',unseen:' · unseen',missed:' · missed/unsure',flagged:' · flagged'}[builder.pool]+({all:'',course:' · course Qs',original:' · originals'}[builder.src]);
     const name=builder.name.trim()||(full?'Full practice exam':`${pick.length}-question test · ${tl}${poolName}`);
     builder.name='';startSession(pick,name);
   };
@@ -341,7 +353,7 @@ function renderQ(){
     <button class="ghost sm" onclick="save();renderHome()">Menu</button></div>
   ${liveStrip(s)}
   <div class="card" id="qcard">
-    <div class="row" style="margin-bottom:4px"><span class="tag" id="qtag">${ans?esc(q.topic)+' · '+esc(q.subtopic):'Question '+(s.pos+1)}</span><span class="tag" title="difficulty">${'●'.repeat(q.difficulty)}${'○'.repeat(3-q.difficulty)}</span><span class="spacer"></span>
+    <div class="row" style="margin-bottom:4px"><span class="tag" id="qtag">${ans?esc(q.topic)+' · '+esc(q.subtopic):'Question '+(s.pos+1)}</span><span class="tag" title="difficulty">${'●'.repeat(q.difficulty)}${'○'.repeat(3-q.difficulty)}</span>${setOf(q)!=='original'?`<span class="tag src">${SET_NAME[setOf(q)]}</span>`:''}<span class="spacer"></span>
       <button class="ghost sm" id="flag" title="Flag to review later">${DB.flags[id]?'★ Flagged':'☆ Flag'}</button></div>
     <div class="stem">${esc(q.stem)}</div>
     ${figBlock(q)}
@@ -418,7 +430,7 @@ function finish(){
 
 /* ---------- Discussion ---------- */
 const HAS_AI=!!(window.cowork&&window.cowork.askClaude);
-const FIGDESC={pv:'static pressure–volume curves of lung, chest wall and respiratory system (A = TLC, B = chest-wall resting volume, C = FRC, D = RV)',fv:'flow–volume loop(s)',fvgrid:'a panel of flow–volume loops labeled A–E',hb:'HbO₂ dissociation curve(s)',spiro:'a spirogram with lettered volume brackets',cpet:'incremental exercise test (A start, B anaerobic threshold, C respiratory compensation point, D peak)',breath:'volume, alveolar and pleural pressure over one tidal breath (A start, B mid-inspiration, C end-inspiration, D mid-expiration, E end-expiration)',fevt:'forced expiratory volume–time curves'};
+const FIGDESC={pv:'static pressure–volume curves of lung, chest wall and respiratory system (A = TLC, B = chest-wall resting volume, C = FRC, D = RV)',fv:'flow–volume loop(s)',fvgrid:'a panel of flow–volume loops labeled A–E',hb:'HbO₂ dissociation curve(s)',spiro:'a spirogram with lettered volume brackets',cpet:'incremental exercise test (A start, B anaerobic threshold, C respiratory compensation point, D peak)',breath:'volume, alveolar and pleural pressure over one tidal breath (A start, B mid-inspiration, C end-inspiration, D mid-expiration, E end-expiration)',fevt:'forced expiratory volume–time curves',pvm:'course-style static P–V curves of chest wall (green), lung (orange) and respiratory system (dash-dot) with red dashed respiratory-muscle curves; TLC where the respiratory-system curve meets the inspiratory muscle curve, RV where it meets the expiratory muscle curve, FRC at zero pressure, B = chest-wall resting volume',alveolus:'single-alveolus model with PA, Ppl, Pel and Ptp',twoalv:'two-alveolus model with alveolar and capillary values',transit:'partial pressure along the pulmonary capillary vs time',o2content:'O₂ content vs PO₂ curves',co2resp:'ventilatory response (minute ventilation) vs PaCO₂ lines',vqheight:'ventilation, blood flow and V/Q from lung base to apex',fowler:'single-breath N₂ washout (Fowler) curve',pattern:'breathing pattern traces labeled A–E',pvr:'pulmonary vascular resistance curve',hysteresis:'air- vs saline-filled lung P–V curves',co2diss:'CO₂ dissociation curves for oxygenated and deoxygenated blood'};
 function figText(q){return q.figure?('(Figure shown: '+(FIGDESC[q.figure.type]||q.figure.type)+'. Spec: '+JSON.stringify(q.figure)+'. Its findings are as described in the explanation.)'):''}
 function tableText(q){return q.table?('TABLE: '+[q.table.head.join(' | ')].concat(q.table.rows.map(r=>r.join(' | '))).join('; ')):''}
 function externalPrompt(q,a,text){
@@ -496,6 +508,7 @@ function openReport(scope){
     ${TOPIC_ORDER.filter(t=>scopeCount[t]).map(t=>{const o=T[t];if(!o)return `<tr><td>${esc(t)}</td><td class="note">0/${scopeCount[t]} answered</td><td></td><td></td><td><span class="pill n">Not started</span></td></tr>`;
       const m=mastery(o),b=band(m);return `<tr><td>${esc(t)}</td><td>${o.c}/${o.n}${o.n<scopeCount[t]?` <span class="note">of ${scopeCount[t]}</span>`:''}</td><td>${o.shaky}</td><td>${Math.round(m*100)}%</td><td><span class="pill ${b[0]}">${b[1]}</span></td></tr>`}).join('')}
   </table></div>
+  ${(()=>{const SS=aggregate(ans,q=>setOf(q));const rows=['qod','retired','original'].filter(k=>SS[k]);return rows.length>1?`<div class="card"><h2>By question source</h2><table><tr><th>Source</th><th>Correct</th><th>Accuracy</th></tr>${rows.map(k=>`<tr><td>${SET_NAME[k]==='Original'?'Original practice questions':SET_NAME[k]+'s'}</td><td>${SS[k].c}/${SS[k].n}</td><td>${Math.round(SS[k].c/SS[k].n*100)}%</td></tr>`).join('')}</table></div>`:''})()}
   <div class="card"><h2>By subtopic</h2><div class="chartbox" id="c2box"><canvas id="c2"></canvas></div></div>
   ${isAll&&sessRows.length?`<div class="card"><h2>Tests taken</h2><table><tr><th>Test</th><th>Date</th><th>Answered</th><th>Score</th><th></th></tr>${sessRows.map(x=>{const k=Object.keys(x.answers),r=k.filter(i=>x.answers[i].correct).length;
     return `<tr><td>${esc(x.name)}</td><td class="note">${fmtDate(x.created)}</td><td>${k.length}/${x.order.length}</td><td>${Math.round(r/k.length*100)}%</td><td><button class="sm" onclick="openReport('${x.id}')">Report</button></td></tr>`}).join('')}</table></div>`:''}
@@ -552,7 +565,7 @@ document.addEventListener('keydown',e=>{
   if(view!=='q'||!document.getElementById('qcard'))return;
   if(e.target.tagName==='TEXTAREA'||e.target.tagName==='INPUT')return;
   const s=S(),id=s.order[s.pos];
-  if(/^[1-5]$/.test(e.key)&&!s.answers[id]){const b=document.querySelectorAll('.opt')[+e.key-1];if(b)b.click()}
+  if(/^[1-7]$/.test(e.key)&&!s.answers[id]){const b=document.querySelectorAll('.opt')[+e.key-1];if(b)b.click()}
   else if(e.key==='Enter'){e.preventDefault();document.getElementById('act').click()}
 });
 
