@@ -70,14 +70,15 @@ const FV={
   fixed:{tlc:6,rv:1.5,pef:9,pif:6,k:1,u0:.12,ecap:3.4,icap:3.2},
   varextra:{tlc:6,rv:1.5,pef:9,pif:6,k:1,u0:.12,icap:2.4},
   varintra:{tlc:6,rv:1.5,pef:9,pif:6,k:1,u0:.12,ecap:3.4},
-  weakness:{tlc:4.6,rv:2.3,pef:4.6,pif:3,k:1,u0:.28}
+  weakness:{tlc:4.6,rv:2.3,pef:4.6,pif:3,k:1,u0:.28},
+  mainstem:{tlc:5.6,rv:1.7,pef:7.5,pif:5,k:1,u0:.12,bi:true}
 };
 function fvPts(kind){
   const p=FV[kind]||FV.normal,pts=[],N=120,span=p.tlc-p.rv;
   for(let i=0;i<=N;i++){const u=i/N,v=p.tlc-u*span;
     let fl=u<p.u0?p.pef*Math.sin(Math.PI/2*u/p.u0):p.pef*Math.pow((1-u)/(1-p.u0),p.k);
-    if(p.ecap)fl=Math.min(fl,p.ecap);pts.push([v,fl])}
-  for(let i=N;i>=0;i--){const u=i/N,v=p.tlc-u*span;let fl=-p.pif*Math.sin(Math.PI*u);if(p.icap)fl=Math.max(fl,-p.icap);pts.push([v,fl])}
+    if(p.ecap)fl=Math.min(fl,p.ecap);if(p.bi&&u>.55)fl=Math.min(fl,1.1*Math.pow((1-u)/.45,.6));pts.push([v,fl])}
+  for(let i=N;i>=0;i--){const u=i/N,v=p.tlc-u*span;let fl=-p.pif*Math.sin(Math.PI*u);if(p.icap)fl=Math.max(fl,-p.icap);if(p.bi&&u<.45)fl=-Math.min(-fl,1.6*Math.sin(Math.PI*u/.9));pts.push([v,fl])}
   return pts;
 }
 function fvAxes(W,H,L,R,T,B,small){
